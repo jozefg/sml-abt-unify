@@ -11,9 +11,12 @@ struct
 
   exception Mismatch of t * t
 
+  fun applySol sol e = List.foldl (fn ((v, e'), e) => subst e' v e) e sol
+
+
   fun add (v, e) sol =
     let
-      val e = List.foldl (fn ((v, e'), e) => subst e' v e) e sol
+      val e = applySol sol e
       val sol = List.map (fn (v', e') => (v', subst e v e')) sol
     in
       (v, e) :: sol
@@ -67,9 +70,11 @@ struct
           | (x \ e, y \ e') => go (Pairs.insert pairs (x, y)) sol (e, e')
           | (oper $ args, oper' $ args') =>
             if Operator.eq (oper, oper')
-            then Vector.foldr (fn ((l, r), sol) => go pairs sol (l, r))
-                              sol
-                              (VectorPair.zip (args, args'))
+            then Vector.foldr
+                   (fn ((l, r), sol) =>
+                       go pairs sol (applySol sol l, applySol sol r))
+                   sol
+                   (VectorPair.zip (args, args'))
             else raise Mismatch (l, r)
           | _ => raise Mismatch (l, r)
     in
