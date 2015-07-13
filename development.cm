@@ -1,0 +1,5 @@
+Library
+  signature UNIFY
+  functor AbtUnify
+is
+  abt-unify.cm (bind:(anchor:libs value:lib))
