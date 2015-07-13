@@ -36,7 +36,7 @@ struct
         case (out l, out r) of
             (* We want to avoid a bunch of (v, ` v)'s in the solution *)
             (` v, ` v') =>
-            if Pairs.member pairs (v, v') then [] else add (v, `` v') sol
+            if Pairs.member pairs (v, v') then sol else add (v, `` v') sol
           | (` v, _) =>
             if occursIn (v, r) orelse
                anyPairs (fn (v', _) => Variable.eq (v, v')) pairs
