@@ -14,6 +14,9 @@ struct
   fun add (v, e) sol =
     (v, List.foldl (fn ((v, e'), e) => subst e' v e) e sol) :: sol
 
+  fun occursIn (v, e) = List.exists (fn v' => Variable.eq (v, v'))
+                                    (freeVariables e)
+
   fun unify (l, r) =
     let
       fun go sol (l, r) =
@@ -21,6 +24,14 @@ struct
             (* We want to avoid a bunch of (v, ` v)'s in the solution *)
             (` v, ` v') =>
             if Variable.eq (v, v') then [] else add (v, `` v') sol
+          | (` v, _) =>
+            if occursIn (v, r)
+            then raise Mismatch (`` v, r)
+            else add (v, r) sol
+          | (_, ` v) =>
+            if occursIn (v, l)
+            then raise Mismatch (`` v, l)
+            else add (v, l) sol
             (* This prevents us from failing to unifying aequiv terms *)
           | (x \ e, y \ e') => go sol (e, subst (`` x) y e')
           | (oper $ args, oper' $ args') =>
