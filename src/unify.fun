@@ -30,6 +30,13 @@ struct
 
   fun anyPairs p pairs = Pairs.foldl (fn (x, b) => b orelse p x) false pairs
 
+  fun hasBoundVarsL pairs e =
+    List.exists (fn v => anyPairs (fn (v', _) => Variable.eq (v, v')) pairs)
+                (freeVariables e)
+  fun hasBoundVarsR pairs e =
+    List.exists (fn v => anyPairs (fn (_, v') => Variable.eq (v, v')) pairs)
+                (freeVariables e)
+
   fun unify (l, r) =
     let
       fun go pairs sol (l, r) =
@@ -39,12 +46,14 @@ struct
             if Pairs.member pairs (v, v') then sol else add (v, `` v') sol
           | (` v, _) =>
             if occursIn (v, r) orelse
-               anyPairs (fn (v', _) => Variable.eq (v, v')) pairs
+               anyPairs (fn (v', _) => Variable.eq (v, v')) pairs orelse
+               hasBoundVarsR pairs r
             then raise Mismatch (`` v, r)
             else add (v, r) sol
           | (_, ` v) =>
             if occursIn (v, l) orelse
-               anyPairs (fn (_, v') => Variable.eq (v, v')) pairs
+               anyPairs (fn (_, v') => Variable.eq (v, v')) pairs orelse
+               hasBoundVarsL pairs l
             then raise Mismatch (`` v, l)
             else add (v, l) sol
             (* This prevents us from failing to unifying aequiv terms *)
