@@ -42,6 +42,9 @@ This `UNIFY` signature is just
     end
 ```
 
+There's a few tests in a the tests folder which demonstrate how to use
+this library if the signature aren't helpful.
+
 Open questions
 
  1. Lists suck, what's a better form for solutions (leave them
