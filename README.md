@@ -36,6 +36,7 @@ This `UNIFY` signature is just
          *  2. If (v, e) is in the returned list than no free variables
          *     of e appear in the solution
          *  3. No variable appears twice in the solution
+         *  4. All variables in the solution occur free in l or r
          *)
         val unify : t * t -> (var * t) list
     end
