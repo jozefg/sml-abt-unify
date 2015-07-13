@@ -4,5 +4,6 @@ Library
 is
   $/basis.cm
   lib/sml-abt/abt.cm
+  lib/sml-abt/vector-lib/vector-lib.cm
   src/unify.sig
   src/unify.fun
