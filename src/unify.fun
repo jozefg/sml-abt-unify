@@ -11,7 +11,12 @@ struct
 
   exception Mismatch of t * t
 
-
+  (* This structure is the set of all the pairs of
+   * variables we know to be equal when unifying terms.
+   * For example, when unifying lam(x.x) with lam(y.y), we must
+   * record the fact that x = y when going under the binder so that
+   * we properly realize that these terms are alpha-equivalent.
+   *)
   structure Pairs = SplaySet(structure Elem = struct
                                type t = Variable.t * Variable.t
                                fun eq ((l, r), (l', r')) =
@@ -24,6 +29,16 @@ struct
                                    | x => x
                               end)
 
+  (* This sadly isn't in SplaySet already so we have to hack it
+   * up. This is the equivalent of List.any though.
+   *)
+  fun anyPairs p pairs = Pairs.foldl (fn (x, b) => b orelse p x) false pairs
+
+
+  (* Given a solution, apply it to a term by repeatedly substituting.
+   * The conditions we have on solutions (no free vars in solution)
+   *  make this well defined
+   *)
   fun applySol sol e = List.foldl (fn ((v, e'), e) => subst e' v e) e sol
 
   (* We need a new notion of alpha equivalence which takes into
@@ -39,6 +54,12 @@ struct
         andalso Vector.all (aequiv pairs) (VectorPair.zip (args, args'))
       | _ => raise Mismatch (l, r)
 
+  (* add sol pairs (v, e) will add (v, e) to the solution, if it
+   * isn't already in there. If v is already in the solution this will
+   * check to see what it was registered as and raise a Mismatch if
+   * they aren't the same term after we apply the current solution to
+   * e
+   *)
   fun add sol pairs (v, e) =
     let
       val e = applySol sol e
@@ -52,11 +73,19 @@ struct
          else raise Mismatch (e, e')
     end
 
-  fun anyPairs p pairs = Pairs.foldl (fn (x, b) => b orelse p x) false pairs
-
+  (* We don't want our solution to have any loops so we use this
+   * to refuse to unify any term with something containing itself
+   * as a subterm.
+   *)
   fun occursIn (v, e) = List.exists (fn v' => Variable.eq (v, v'))
                                     (freeVariables e)
 
+  (* This function checks to see whether a term contains any variables
+   * we know to have been bound on the left. This prevents us from creating
+   * a solution which contains *bound* variables in it. This makes no sense
+   * because a bound variable doesn't make sense outside the context of its
+   * binder.
+   *)
   fun hasBoundVarsL pairs e =
     List.exists (fn v => anyPairs (fn (v', _) => Variable.eq (v, v')) pairs)
                 (freeVariables e)
