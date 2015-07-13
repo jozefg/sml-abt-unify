@@ -12,10 +12,13 @@ struct
   exception Mismatch of t * t
 
   fun add (v, e) sol =
-    (v, List.foldl (fn ((v, e'), e) => subst e' v e) e sol) :: sol
+    let
+      val e = List.foldl (fn ((v, e'), e) => subst e' v e) e sol
+      val sol = List.map (fn (v', e') => (v', subst e v e')) sol
+    in
+      (v, e) :: sol
+    end
 
-  fun occursIn (v, e) = List.exists (fn v' => Variable.eq (v, v'))
-                                    (freeVariables e)
   structure Pairs = SplaySet(structure Elem = struct
                                type t = Variable.t * Variable.t
                                fun eq ((l, r), (l', r')) =
@@ -30,9 +33,13 @@ struct
 
   fun anyPairs p pairs = Pairs.foldl (fn (x, b) => b orelse p x) false pairs
 
+  fun occursIn (v, e) = List.exists (fn v' => Variable.eq (v, v'))
+                                    (freeVariables e)
+
   fun hasBoundVarsL pairs e =
     List.exists (fn v => anyPairs (fn (v', _) => Variable.eq (v, v')) pairs)
                 (freeVariables e)
+
   fun hasBoundVarsR pairs e =
     List.exists (fn v => anyPairs (fn (_, v') => Variable.eq (v, v')) pairs)
                 (freeVariables e)
