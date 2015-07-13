@@ -1,0 +1,8 @@
+Library
+  signature UNIFY
+  functor AbtUnify
+is
+  $/basis.cm
+  lib/sml-abt/abt.cm
+  src/unify.sig
+  src/unify.fun

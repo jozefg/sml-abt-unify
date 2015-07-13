@@ -1,0 +1,3 @@
+[submodule "lib/sml-abt"]
+	path = lib/sml-abt
+	url = ssh://git@github.com/jonsterling/sml-abt
