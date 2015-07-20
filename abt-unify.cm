@@ -7,3 +7,7 @@ is
   $libs/sml-abt/vector-lib/vector-lib.cm
   src/unify.sig
   src/unify.fun
+
+  src/meta.sig
+  src/meta.sml
+  src/unify-operators.fun
