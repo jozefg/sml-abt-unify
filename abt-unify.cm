@@ -1,6 +1,13 @@
 Library
   signature UNIFY
   functor AbtUnify
+
+  signature META_OPERATOR
+  signature META_CONVERT
+
+  functor MetaOperator
+  functor MetaAbt
+  functor AbtUnifyOperators
 is
   $libs/cmlib/cmlib.cm
   $libs/sml-abt/abt.cm

@@ -1,5 +1,12 @@
 Library
   signature UNIFY
   functor AbtUnify
+
+  signature META_OPERATOR
+  signature META_CONVERT
+
+  functor MetaOperator
+  functor MetaAbt
+  functor AbtUnifyOperators
 is
   abt-unify.cm (bind:(anchor:libs value:lib))
