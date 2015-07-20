@@ -73,13 +73,6 @@ struct
          else raise Mismatch (e, e')
     end
 
-  (* We don't want our solution to have any loops so we use this
-   * to refuse to unify any term with something containing itself
-   * as a subterm.
-   *)
-  fun occursIn (v, e) = List.exists (fn v' => Variable.eq (v, v'))
-                                    (freeVariables e)
-
   (* This function checks to see whether a term contains any variables
    * we know to have been bound on the left. This prevents us from creating
    * a solution which contains *bound* variables in it. This makes no sense
@@ -104,13 +97,13 @@ struct
             then sol
             else add sol pairs (v, `` v')
           | (` v, _) =>
-            if occursIn (v, r) orelse
+            if hasFree (r, v) orelse
                anyPairs (fn (v', _) => Variable.eq (v, v')) pairs orelse
                hasBoundVarsR pairs r
             then raise Mismatch (`` v, r)
             else add sol pairs (v, r)
           | (_, ` v) =>
-            if occursIn (v, l) orelse
+            if hasFree (l, v) orelse
                anyPairs (fn (_, v') => Variable.eq (v, v')) pairs orelse
                hasBoundVarsL pairs l
             then raise Mismatch (`` v, l)
