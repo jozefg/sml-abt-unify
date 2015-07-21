@@ -53,4 +53,6 @@ struct
   val () = incorrect (`` a, All $$ #[b \\ `` a])
   val () = correct (Arr $$ #[`` a, `` a],
                     Arr $$ #[Arr $$ #[`` b, `` b], Arr $$ #[`` b, `` b]])
+  val true = matches (All $$ #[a \\ `` b], All $$ #[a \\ `` a])
+  val false = matches (All $$ #[a \\ (Arr $$ #[`` a, `` a])], All $$ #[a \\ `` a])
 end
