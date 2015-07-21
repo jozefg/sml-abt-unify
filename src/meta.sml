@@ -55,4 +55,12 @@ struct
     in
       go BoundSet.empty M
     end
+
+  fun unconvert M : A.t =
+    case Meta.out M of
+        Meta.` x => into (` x)
+      | Meta.\ (x, e) => into (x \ unconvert e)
+      | Meta.$ (MetaOperator.META v, _) => into (` v)
+      | Meta.$ (MetaOperator.NORMAL p, es) => into (p $ Vector.map unconvert es)
+
 end
