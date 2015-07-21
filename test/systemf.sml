@@ -57,7 +57,7 @@ struct
   val false = matches (All $$ #[a \\ (Arr $$ #[`` a, `` a])], All $$ #[a \\ `` a])
 end
 
-structure SystemFTests =
+structure SystemFMetaTests =
 struct
   structure A = MetaAbt(Abt(structure Operator = Ops
                             structure Variable = Variable ()))
@@ -76,7 +76,7 @@ struct
   fun assert b = if b then () else raise Fail "assert failed"
   fun applySol sol e =
       List.foldl
-          (fn ((v, e'), e) => substOperator (fn _ => e') (META v) e)
+          (fn ((v, e'), e) => substOperator (fn #[] => e') (META v) e)
           e
           sol
 
@@ -89,10 +89,7 @@ struct
       if eq (l', r')
       then true
       else raise Fail "Returned false solution"
-    end handle Mismatch (l,r) =>
-               (print (toString l ^ "\t:\t");
-                print (toString r ^ "\n");
-                false)
+    end handle Mismatch (l,r) => false
 
   val correct = assert o test
   val incorrect = assert o not o test
@@ -109,12 +106,12 @@ struct
   val () = incorrect (all #[a \\ `` a],
                       all #[b \\ (arr #[`` b, `` b])])
   val () = correct (meta a, all #[b \\ `` b])
-  (* val () = correct (all #[b \\ `` b], meta a) *)
-  (* val () = incorrect (meta a, all #[b \\ meta a]) *)
-  (* val () = correct (arr #[meta a, meta a], *)
-  (*                   arr #[arr #[meta b, meta b], arr #[meta b, meta b]]) *)
-  (* val true = matches (all #[a \\ meta b], *)
-  (*                     all #[a \\ `` a]) *)
-  (* val false = matches (all #[a \\ (arr #[`` a, `` a])], *)
-  (*                      all #[a \\ `` a]) *)
+  val () = correct (all #[b \\ `` b], meta a)
+  val () = incorrect (meta a, all #[b \\ meta a])
+  val () = correct (arr #[meta a, meta a],
+                    arr #[arr #[meta b, meta b], arr #[meta b, meta b]])
+  val true = matches (all #[a \\ meta b],
+                      all #[a \\ `` a])
+  val false = matches (all #[a \\ (arr #[`` a, `` a])],
+                       all #[a \\ `` a])
 end

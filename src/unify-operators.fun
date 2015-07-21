@@ -115,7 +115,7 @@ struct
       | (META v $ #[], _) =>
         if occursIn (r, v) orelse
            (needSol andalso hasBoundVarsR pairs r)
-        then (print "Blew up here"; raise Mismatch (l, r))
+        then raise Mismatch (l, r)
         else add sol pairs (v, r)
       | (_, META v $ #[]) =>
         if occursIn (l, v) orelse
