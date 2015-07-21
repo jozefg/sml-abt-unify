@@ -23,4 +23,18 @@ sig
      *  4. All variables in the solution occur free in l or r
      *)
     val unify : t * t -> (var * t) list
+
+    (* This behaves like [unify] but allows a unification term to
+     * mention a bound variable. Because of this and limitations of
+     * ABTs we cannot produce a substitution for it.
+     *
+     * The case where this differs is where we have a unification term
+     * which appears under a binder and mentions a bound variable, eg
+     * [lam(x.M)]. With [unify] this couldn't match [lam(x.x)] but it
+     * does with [matches]. However, all occurences of [M] have to mention
+     * the same bound variable, eg [ap(lam(x.M); lam(x.M))] doesn't match
+     * [ap(lam(x.x); lam(x.x))] still since those [x]'s refer to different
+     * bound variables.
+     *)
+    val matches : t * t -> bool
 end

@@ -99,42 +99,42 @@ struct
 
   fun occursIn (M, v) = List.exists (fn p => O.eq (META v, p)) (operators M)
 
-  fun unify (l, r) =
-    let
-      fun go pairs sol (l, r) =
-        case (out l, out r) of
-            (* We want to avoid a bunch of (v, ` v)'s in the solution *)
-            (` v, ` v') =>
-            if Variable.eq (v, v') orelse Pairs.member pairs (v, v')
-            then sol
-            else raise Mismatch (l, r)
-          (* This prevents us from failing to unifying aequiv terms *)
-          | (x \ e, y \ e') => go (Pairs.insert pairs (x, y)) sol (e, e')
-          | (META v $ #[], META v' $ #[]) =>
-            if Variable.eq (v, v')
-            then sol
-            else add sol pairs (v, r)
-          | (META v $ #[], _) =>
-            if occursIn (r, v) orelse
-               anyPairs (fn (v', _) => Variable.eq (v, v')) pairs orelse
-               hasBoundVarsR pairs r
-            then raise Mismatch (l, r)
-            else add sol pairs (v, r)
-          | (_, META v $ #[]) =>
-            if occursIn (l, v) orelse
-               anyPairs (fn (_, v') => Variable.eq (v, v')) pairs orelse
-               hasBoundVarsL pairs l
-            then raise Mismatch (l, r)
-            else add sol pairs (v, l)
-          | (oper $ args, oper' $ args') =>
-            if Operator.eq (oper, oper')
-            then Vector.foldr
-                   (fn ((l, r), sol) => go pairs sol (l, r))
-                   sol
-                   (VectorPair.zip (args, args'))
-            else raise Mismatch (l, r)
-          | _ => raise Mismatch (l, r)
-    in
-      go Pairs.empty [] (l, r)
-    end
+  fun go needSol pairs sol (l, r) =
+    case (out l, out r) of
+        (* We want to avoid a bunch of (v, ` v)'s in the solution *)
+        (` v, ` v') =>
+        if Variable.eq (v, v') orelse Pairs.member pairs (v, v')
+        then sol
+        else raise Mismatch (l, r)
+      (* This prevents us from failing to unifying aequiv terms *)
+      | (x \ e, y \ e') => go needSol (Pairs.insert pairs (x, y)) sol (e, e')
+      | (META v $ #[], META v' $ #[]) =>
+        if Variable.eq (v, v')
+        then sol
+        else add sol pairs (v, r)
+      | (META v $ #[], _) =>
+        if occursIn (r, v) orelse
+           anyPairs (fn (v', _) => Variable.eq (v, v')) pairs orelse
+           (needSol andalso hasBoundVarsR pairs r)
+        then raise Mismatch (l, r)
+        else add sol pairs (v, r)
+      | (_, META v $ #[]) =>
+        if occursIn (l, v) orelse
+           anyPairs (fn (_, v') => Variable.eq (v, v')) pairs orelse
+           (needSol andalso hasBoundVarsL pairs l)
+        then raise Mismatch (l, r)
+        else add sol pairs (v, l)
+      | (oper $ args, oper' $ args') =>
+        if Operator.eq (oper, oper')
+        then Vector.foldr
+                 (fn ((l, r), sol) => go needSol pairs sol (l, r))
+                 sol
+                 (VectorPair.zip (args, args'))
+        else raise Mismatch (l, r)
+      | _ => raise Mismatch (l, r)
+
+  fun unify (l, r) = go true Pairs.empty [] (l, r)
+  fun matches (l, r) =
+    (go false Pairs.empty [] (l, r); true)
+        handle Mismatch _ => false
 end
