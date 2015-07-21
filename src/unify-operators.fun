@@ -114,13 +114,11 @@ struct
         else add sol pairs (v, r)
       | (META v $ #[], _) =>
         if occursIn (r, v) orelse
-           anyPairs (fn (v', _) => Variable.eq (v, v')) pairs orelse
            (needSol andalso hasBoundVarsR pairs r)
-        then raise Mismatch (l, r)
+        then (print "Blew up here"; raise Mismatch (l, r))
         else add sol pairs (v, r)
       | (_, META v $ #[]) =>
         if occursIn (l, v) orelse
-           anyPairs (fn (_, v') => Variable.eq (v, v')) pairs orelse
            (needSol andalso hasBoundVarsL pairs l)
         then raise Mismatch (l, r)
         else add sol pairs (v, l)

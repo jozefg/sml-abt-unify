@@ -20,7 +20,7 @@ struct
     | toString (NORMAL p) = Operator.toString p
 end
 
-functor MetaAbt(structure A : ABT) :>
+functor MetaAbt(A : ABT) :>
         META_CONVERT where A = A =
 struct
   structure A = A
@@ -39,4 +39,20 @@ struct
         ` x => Meta.`` x
       | p $ es => Meta.$$ (MetaOperator.NORMAL p, Vector.map convert es)
       | v \ e => Meta.\\ (v, convert e)
+
+  structure BoundSet = SplaySet(structure Elem = Variable)
+
+  fun convertFree M =
+    let
+      fun go bound M =
+          case out M of
+              ` x => if BoundSet.member bound x
+                     then Meta.`` x
+                     else Meta.$$ (MetaOperator.META x, #[])
+            | p $ es => Meta.$$ (MetaOperator.NORMAL p,
+                                 Vector.map (go bound) es)
+            | v \ e => Meta.\\ (v, go bound e)
+    in
+      go BoundSet.empty M
+    end
 end
