@@ -51,7 +51,7 @@ struct
                      else Meta.$$ (MetaOperator.META x, #[])
             | p $ es => Meta.$$ (MetaOperator.NORMAL p,
                                  Vector.map (go bound) es)
-            | v \ e => Meta.\\ (v, go bound e)
+            | v \ e => Meta.\\ (v, go (BoundSet.insert bound v) e)
     in
       go BoundSet.empty M
     end

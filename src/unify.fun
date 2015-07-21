@@ -15,10 +15,10 @@ struct
   exception Mismatch of A.t * A.t
 
   fun unify (l, r) =
-      List.map (fn (v, e) => (v, unconvert e))
-               (U.unify (convertFree l, convertFree r))
-        handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
+    List.map (fn (v, e) => (v, unconvert e))
+             (U.unify (convertFree l, convertFree r))
+      handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
   fun matches (l, r) =
-      U.matches (convertFree l, convertFree r)
-        handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
+    U.matches (convertFree l, convertFree r)
+      handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
 end
