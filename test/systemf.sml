@@ -10,7 +10,9 @@ struct
       | Arr => #[0, 0]
       | Unit => #[]
 
-  fun toString _ = ""
+  fun toString All = "all"
+    | toString Arr = "arr"
+    | toString Unit = "unit"
 end
 
 structure SystemFTests =
@@ -47,7 +49,7 @@ struct
 
   val () = correct (All $$ #[a \\ `` a], All $$ #[b \\ `` b])
   val () = incorrect (All $$ #[a \\ `` a],
-                     All $$ #[b \\ (Arr $$ #[`` b, `` b])])
+                      All $$ #[b \\ (Arr $$ #[`` b, `` b])])
   val () = correct (`` a, All $$ #[b \\ `` b])
   val () = correct (All $$ #[b \\ `` b], `` a)
   val () = incorrect (`` a, All $$ #[b \\ `` a])
