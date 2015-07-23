@@ -71,7 +71,9 @@ struct
   fun add sol pairs (v, e) =
     let
       val e = applySol sol e
-      val sol = List.map (fn (v', e') => (v', subst e v e')) sol
+      val sol =
+        List.map (fn (v', e') => (v', substOperator (fn _ => e) (META v) e'))
+                 sol
     in
       case List.find (fn (v', _) => Variable.eq (v, v')) sol of
          NONE => (v, e) :: sol
