@@ -101,6 +101,8 @@ struct
   fun all es = NORMAL All $$ es
   fun arr es = NORMAL Arr $$ es
 
+  val timer = Timer.startRealTimer ()
+
   val () = correct (all #[a \\ `` a], all #[b \\ `` b])
   val () = incorrect (all #[a \\ `` a],
                       all #[b \\ (arr #[`` b, `` b])])
@@ -113,4 +115,7 @@ struct
                       all #[a \\ `` a])
   val false = matches (all #[a \\ (arr #[`` a, `` a])],
                        all #[a \\ `` a])
+
+  val elapsed = Timer.checkRealTimer timer
+  val _ = print ("Elapsed: " ^ Time.fmt 10 elapsed)
 end
