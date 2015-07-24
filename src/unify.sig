@@ -6,6 +6,7 @@ sig
     (* The type of the free variables contained in t's *)
     type var
 
+    structure Solution : DICT where type key = var
     type solution = (var * t) list
 
     (* This is thrown by unify when unification fails.

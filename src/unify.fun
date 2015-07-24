@@ -5,6 +5,7 @@ functor AbtUnify(Abt : ABT_UTIL) :>
 struct
   type t = Abt.t
   type var = Abt.Variable.t
+  structure Solution = SplayDict(structure Key = Abt.Variable)
   type solution = (var * t) list
 
   structure MetaAbt = MetaAbt(Abt)
