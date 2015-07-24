@@ -24,6 +24,7 @@ struct
 
   type t = t
   type var = Variable.t
+  type solution = (var * t) list
 
   exception Mismatch of t * t
 

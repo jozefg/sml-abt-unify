@@ -6,6 +6,8 @@ sig
     (* The type of the free variables contained in t's *)
     type var
 
+    type solution = (var * t) list
+
     (* This is thrown by unify when unification fails.
      * The left component is the subterm of the left argument we were
      * trying to unify. The right component is the subterm of the right
@@ -22,7 +24,7 @@ sig
      *  3. No variable appears twice in the solution
      *  4. All variables in the solution occur free in l or r
      *)
-    val unify : t * t -> (var * t) list
+    val unify : t * t -> solution
 
     (* This behaves like [unify] but allows a unification term to
      * mention a bound variable. Because of this and limitations of
