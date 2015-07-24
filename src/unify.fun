@@ -11,13 +11,15 @@ struct
 
   structure U = AbtUnifyOperators(structure A = AbtUtil(Meta)
                                   structure O = MetaOperator)
+  structure Solution = U.Solution
+  type solution = t U.Solution.dict
 
   exception Mismatch of A.t * A.t
 
   fun unify (l, r) =
-    List.map (fn (v, e) => (v, unconvert e))
-             (U.unify (convertFree l, convertFree r))
+    Solution.map unconvert (U.unify (convertFree l, convertFree r))
       handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
+
   fun matches (l, r) =
     U.matches (convertFree l, convertFree r)
       handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)

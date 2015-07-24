@@ -31,8 +31,8 @@ struct
   fun test (l, r) =
     let
       val sol = unify (l, r)
-      val l' = List.foldl (fn ((v, e'), e) => subst e' v e) l sol
-      val r' = List.foldl (fn ((v, e'), e) => subst e' v e) r sol
+      val l' = U.Solution.foldl (fn (v, e', e) => subst e' v e) l sol
+      val r' = U.Solution.foldl (fn (v, e', e) => subst e' v e) r sol
     in
       if eq (l', r')
       then true
@@ -77,10 +77,7 @@ struct
 
   fun assert b = if b then () else raise Fail "assert failed"
   fun applySol sol e =
-      List.foldl
-          (fn ((v, e'), e) => substOperator (fn #[] => e') (META v) e)
-          e
-          sol
+    U.Solution.foldl (fn (v, e', e) => substOperator (fn _ => e') (META v) e) e sol
 
   fun test (l, r) =
     let
@@ -104,6 +101,8 @@ struct
   fun all es = NORMAL All $$ es
   fun arr es = NORMAL Arr $$ es
 
+  val timer = Timer.startRealTimer ()
+
   val () = correct (all #[a \\ `` a], all #[b \\ `` b])
   val () = incorrect (all #[a \\ `` a],
                       all #[b \\ (arr #[`` b, `` b])])
@@ -116,4 +115,7 @@ struct
                       all #[a \\ `` a])
   val false = matches (all #[a \\ (arr #[`` a, `` a])],
                        all #[a \\ `` a])
+
+  val elapsed = Timer.checkRealTimer timer
+  val _ = print ("Elapsed: " ^ Time.fmt 10 elapsed)
 end

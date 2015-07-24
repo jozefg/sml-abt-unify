@@ -1,7 +1,19 @@
+functor DuplicateOrdered (Elem : ORDERED) : ORDERED =
+struct
+  type t = Elem.t * Elem.t
+  fun eq ((l, r), (l', r')) =
+    Elem.eq (l, l') andalso Elem.eq (r, r')
+
+  fun compare ((l, r), (l', r')) =
+    case Elem.compare (l, l') of
+        EQUAL => Elem.compare (r, r')
+      | r => r
+end
+
 functor AbtUnifyOperators(structure O : META_OPERATOR
                           structure A : ABT_UTIL
-                            where Operator = O
-                            where Variable = O.Variable) :>
+                          sharing A.Operator = O
+                          sharing A.Variable = O.Variable) :>
         UNIFY
           where type t = A.t
           where type var = A.Variable.t =
@@ -13,6 +25,9 @@ struct
   type t = t
   type var = Variable.t
 
+  structure Solution = SplayDict(structure Key = A.Variable)
+  type solution = t Solution.dict
+
   exception Mismatch of t * t
 
   (* This structure is the set of all the pairs of
@@ -21,17 +36,7 @@ struct
    * record the fact that x = y when going under the binder so that
    * we properly realize that these terms are alpha-equivalent.
    *)
-  structure Pairs = SplaySet(structure Elem = struct
-                               type t = Variable.t * Variable.t
-                               fun eq ((l, r), (l', r')) =
-                                 Variable.eq (l, l') andalso
-                                 Variable.eq (r, r')
-
-                               fun compare ((l, r), (l', r')) =
-                                 case Variable.compare (l, l') of
-                                     EQUAL => Variable.compare (r, r')
-                                   | x => x
-                              end)
+  structure Pairs = SplaySet(structure Elem = DuplicateOrdered(Variable))
 
   (* This sadly isn't in SplaySet already so we have to hack it
    * up. This is the equivalent of List.any though.
@@ -43,11 +48,8 @@ struct
    * The conditions we have on solutions (no free vars in solution)
    *  make this well defined
    *)
-  fun applySol sol e =
-      List.foldl
-          (fn ((v, e'), e) => substOperator (fn _ => e') (META v) e)
-          e
-          sol
+  fun applySol (sol : solution) e =
+    Solution.foldl (fn (v, e', e) => substOperator (fn _ => e') (META v) e) e sol
 
   (* We need a new notion of alpha equivalence which takes into
    * account this set of variables which we know to be equal. This
@@ -68,16 +70,14 @@ struct
    * they aren't the same term after we apply the current solution to
    * e
    *)
-  fun add sol pairs (v, e) =
+  fun add (sol : solution) pairs (v, e) =
     let
       val e = applySol sol e
-      val sol =
-        List.map (fn (v', e') => (v', substOperator (fn _ => e) (META v) e'))
-                 sol
+      val sol = Solution.map (fn e' => substOperator (fn _ => e) (META v) e') sol
     in
-      case List.find (fn (v', _) => Variable.eq (v, v')) sol of
-         NONE => (v, e) :: sol
-       | SOME (_, e') =>
+      case Solution.find sol v of
+         NONE => Solution.insert sol v e
+       | SOME e' =>
          if aequiv pairs (e, e')
          then sol
          else raise Mismatch (e, e')
@@ -101,7 +101,7 @@ struct
 
   fun occursIn (M, v) = List.exists (fn p => O.eq (META v, p)) (operators M)
 
-  fun go needSol pairs sol (l, r) =
+  fun go needSol pairs (sol : solution) (l, r) =
     case (out l, out r) of
         (* We want to avoid a bunch of (v, ` v)'s in the solution *)
         (` v, ` v') =>
@@ -133,8 +133,8 @@ struct
         else raise Mismatch (l, r)
       | _ => raise Mismatch (l, r)
 
-  fun unify (l, r) = go true Pairs.empty [] (l, r)
+  fun unify (l, r) = go true Pairs.empty Solution.empty (l, r)
   fun matches (l, r) =
-    (go false Pairs.empty [] (l, r); true)
+    (go false Pairs.empty Solution.empty (l,r); true)
         handle Mismatch _ => false
 end
