@@ -1,3 +1,15 @@
+functor DuplicateOrdered (Elem : ORDERED) : ORDERED =
+struct
+  type t = Elem.t * Elem.t
+  fun eq ((l, r), (l', r')) =
+    Elem.eq (l, l') andalso Elem.eq (r, r')
+
+  fun compare ((l, r), (l', r')) =
+    case Elem.compare (l, l') of
+        EQUAL => Elem.compare (r, r')
+      | r => r
+end
+
 functor AbtUnifyOperators(structure O : META_OPERATOR
                           structure A : ABT_UTIL
                             where Operator = O
@@ -21,17 +33,7 @@ struct
    * record the fact that x = y when going under the binder so that
    * we properly realize that these terms are alpha-equivalent.
    *)
-  structure Pairs = SplaySet(structure Elem = struct
-                               type t = Variable.t * Variable.t
-                               fun eq ((l, r), (l', r')) =
-                                 Variable.eq (l, l') andalso
-                                 Variable.eq (r, r')
-
-                               fun compare ((l, r), (l', r')) =
-                                 case Variable.compare (l, l') of
-                                     EQUAL => Variable.compare (r, r')
-                                   | x => x
-                              end)
+  structure Pairs = SplaySet(structure Elem = DuplicateOrdered(Variable))
 
   (* This sadly isn't in SplaySet already so we have to hack it
    * up. This is the equivalent of List.any though.
