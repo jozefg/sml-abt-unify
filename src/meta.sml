@@ -43,20 +43,20 @@ struct
       | p $ es => Meta.$$ (MetaOperator.NORMAL p, Vector.map convert es)
       | v \ e => Meta.\\ (v, convert e)
 
-  structure BoundSet = SplaySet(structure Elem = Variable)
+  structure VarSet = SplaySet(structure Elem = Variable)
 
-  fun convertFree M =
+  fun convertFree fvs M =
     let
-      fun go bound M =
+      fun go fvs M =
           case out M of
-              ` x => if BoundSet.member bound x
+              ` x => if VarSet.member fvs x
                      then Meta.`` x
                      else Meta.$$ (MetaOperator.META x, #[])
             | p $ es => Meta.$$ (MetaOperator.NORMAL p,
-                                 Vector.map (go bound) es)
-            | v \ e => Meta.\\ (v, go (BoundSet.insert bound v) e)
+                                 Vector.map (go fvs) es)
+            | v \ e => Meta.\\ (v, go (VarSet.insert fvs v) e)
     in
-      go BoundSet.empty M
+      go (foldl (fn (x,xs) => VarSet.insert xs x) VarSet.empty fvs) M
     end
 
   fun unconvert t M =

@@ -22,7 +22,7 @@ sig
       where Operator = MetaOperator
       where Variable = A.Variable
 
-    (* Converts and [A.t] into a [Meta.t] by turning each
+    (* Converts an [A.t] into a [Meta.t] by turning each
      * operator into the corresponding [NORMAL] operator.
      * This otherwise leaves the rest of the structure intact.
      *)
@@ -30,10 +30,9 @@ sig
 
     (* This converts an ABT to the corresponding meta-ABT
      * and converts all free variables to the appropriate [META]
-     * operator. This means that any term created by [convertFree]
-     * should be closed.
+     * operator, except those in the passed list.
      *)
-    val convertFree : A.t -> Meta.t
+    val convertFree : A.Variable.t list -> A.t -> Meta.t
 
     (* Convert back into a normal [A.t] by exchanging each [META] for
      * a free variable. [WILD]s are replaced by exchanging each [WILD]
