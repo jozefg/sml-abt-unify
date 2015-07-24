@@ -7,16 +7,19 @@ struct
   structure Operator = O
   structure Variable = V
 
-  datatype t = META of Variable.t | NORMAL of Operator.t
+  datatype t = META of Variable.t | WILD | NORMAL of Operator.t
 
   fun eq (META v, META v') = Variable.eq (v, v')
     | eq (NORMAL p, NORMAL p') = Operator.eq (p, p')
+    | eq (WILD, WILD) = true
     | eq (_, _) = false
 
   fun arity (META _) = #[]
+    | arity WILD = #[]
     | arity (NORMAL p) = Operator.arity p
 
   fun toString (META v) = "@" ^ Variable.toString v
+    | toString WILD = "!"
     | toString (NORMAL p) = Operator.toString p
 end
 
@@ -56,11 +59,29 @@ struct
       go BoundSet.empty M
     end
 
-  fun unconvert M : A.t =
+  fun unconvert t M =
     case Meta.out M of
         Meta.` x => into (` x)
-      | Meta.\ (x, e) => into (x \ unconvert e)
+      | Meta.\ (x, e) => into (x \ unconvert t e)
       | Meta.$ (MetaOperator.META v, _) => into (` v)
-      | Meta.$ (MetaOperator.NORMAL p, es) => into (p $ Vector.map unconvert es)
+      | Meta.$ (MetaOperator.WILD, _) => t ()
+      | Meta.$ (MetaOperator.NORMAL p, es) => into (p $ Vector.map (unconvert t) es)
 
+  local
+    structure Pairs = SplaySet(structure Elem = DuplicateOrdered(Variable))
+    open Meta
+
+    fun aequiv pairs (l, r) =
+        case (out l, out r) of
+            (` v, ` v') => Variable.eq (v, v') orelse Pairs.member pairs (v, v')
+          | (x \ e, y \ e') => aequiv (Pairs.insert pairs (x, y)) (e, e')
+          | (MetaOperator.WILD $ _, _) => true
+          | (_, MetaOperator.WILD $ _) => true
+          | (oper $ args, oper' $ args') =>
+            Operator.eq (oper, oper')
+            andalso Vector.all (aequiv pairs) (VectorPair.zip (args, args'))
+          | _ => false
+  in
+    fun eqModWild (l, r) = aequiv Pairs.empty (l, r)
+  end
 end

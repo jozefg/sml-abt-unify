@@ -62,7 +62,7 @@ struct
       | (oper $ args, oper' $ args') =>
         Operator.eq (oper, oper')
         andalso Vector.all (aequiv pairs) (VectorPair.zip (args, args'))
-      | _ => raise Mismatch (l, r)
+      | _ => false
 
   (* add sol pairs (v, e) will add (v, e) to the solution, if it
    * isn't already in there. If v is already in the solution this will
@@ -91,12 +91,14 @@ struct
    *)
   fun hasBoundVarsL pairs e =
     List.exists (fn (META v) => anyPairs (fn (v', _) => Variable.eq (v, v')) pairs
-                  | (NORMAL _) => false)
+                  | (NORMAL _) => false
+                  | WILD => false)
                 (operators e)
 
   fun hasBoundVarsR pairs e =
     List.exists (fn (META v) => anyPairs (fn (_, v') => Variable.eq (v, v')) pairs
-                  | (NORMAL _) => false)
+                  | (NORMAL _) => false
+                  | WILD => false)
                 (operators e)
 
   fun occursIn (M, v) = List.exists (fn p => O.eq (META v, p)) (operators M)
@@ -110,6 +112,8 @@ struct
         else raise Mismatch (l, r)
       (* This prevents us from failing to unifying aequiv terms *)
       | (x \ e, y \ e') => go needSol (Pairs.insert pairs (x, y)) sol (e, e')
+      | (WILD $ #[], _) => sol
+      | (_, WILD $ #[]) => sol
       | (META v $ #[], META v' $ #[]) =>
         if Variable.eq (v, v')
         then sol

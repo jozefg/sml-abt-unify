@@ -3,7 +3,7 @@ sig
     structure Operator : OPERATOR
     structure Variable : VARIABLE
 
-    datatype t = META of Variable.t | NORMAL of Operator.t
+    datatype t = META of Variable.t | WILD |  NORMAL of Operator.t
 
     val eq : t * t -> bool
     val arity : t -> Arity.t
@@ -36,7 +36,13 @@ sig
     val convertFree : A.t -> Meta.t
 
     (* Convert back into a normal [A.t] by exchanging each [META] for
-     * a free variable.
+     * a free variable. [WILD]s are replaced by exchanging each [WILD]
+     * for the result of applying the supplied function.
      *)
-    val unconvert : Meta.t -> A.t
+    val unconvert : (unit -> A.t) -> Meta.t -> A.t
+
+    (* Returns true if the trees are equal if wild cards are considered
+     * equal to everything
+     *)
+    val eqModWild : Meta.t * Meta.t -> bool
 end

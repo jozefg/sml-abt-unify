@@ -85,7 +85,7 @@ struct
       val l' = applySol sol l
       val r' = applySol sol r
     in
-      if eq (l', r')
+      if eqModWild (l', r')
       then true
       else raise Fail "Returned false solution"
     end handle Mismatch (l,r) => false
@@ -113,6 +113,10 @@ struct
                     arr #[arr #[meta b, meta b], arr #[meta b, meta b]])
   val true = matches (all #[a \\ meta b],
                       all #[a \\ `` a])
+
+  val () = correct (all #[a \\ (WILD $$ #[])], all #[a \\ `` a])
+  val () = correct (all #[a \\ `` a], all #[a \\ (WILD $$ #[])])
+
   val false = matches (all #[a \\ (arr #[`` a, `` a])],
                        all #[a \\ `` a])
 

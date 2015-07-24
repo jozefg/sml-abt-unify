@@ -16,11 +16,14 @@ struct
 
   exception Mismatch of A.t * A.t
 
+  val unconvertNoWild =
+    unconvert (fn () => raise Fail "unify: Impossible, found wild")
+
   fun unify (l, r) =
-    Solution.map unconvert (U.unify (convertFree l, convertFree r))
-      handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
+    Solution.map unconvertNoWild (U.unify (convertFree l, convertFree r))
+      handle U.Mismatch (l, r) => raise Mismatch (unconvertNoWild l, unconvertNoWild r)
 
   fun matches (l, r) =
     U.matches (convertFree l, convertFree r)
-      handle U.Mismatch (l, r) => raise Mismatch (unconvert l, unconvert r)
+      handle U.Mismatch (l, r) => raise Mismatch (unconvertNoWild l, unconvertNoWild r)
 end
