@@ -12,8 +12,8 @@ end
 
 functor AbtUnifyOperators(structure O : META_OPERATOR
                           structure A : ABT_UTIL
-                            where Operator = O
-                            where Variable = O.Variable) :>
+                          sharing A.Operator = O
+                          sharing A.Variable = O.Variable) :>
         UNIFY
           where type t = A.t
           where type var = A.Variable.t =
