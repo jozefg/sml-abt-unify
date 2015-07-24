@@ -1,6 +1,6 @@
 [submodule "lib/sml-abt"]
 	path = lib/sml-abt
-	url = ssh://git@github.com/jonsterling/sml-abt
+	url = https://www.github.com/jonsterling/sml-abt
 [submodule "cmlib"]
 	path = lib/cmlib
-	url = ssh://git@github.com/standardml/cmlib
+	url = https://www.github.com/standardml/cmlib
