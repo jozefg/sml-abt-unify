@@ -7,7 +7,7 @@ sig
     type var
 
     structure Solution : DICT where type key = var
-    type solution = (var * t) list
+    type solution = t Solution.dict
 
     (* This is thrown by unify when unification fails.
      * The left component is the subterm of the left argument we were
