@@ -126,6 +126,4 @@ this library if the signature aren't helpful.
 
 Open questions
 
- 1. Lists suck, what's a better form for solutions (leave them
-    abstract)?
- 2. Is it fast enough yet?
+ 1. Is it fast enough yet?
